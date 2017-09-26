@@ -1,7 +1,13 @@
 # lcd-mbed-shield-stm32f
-Part of library for LCD on MBED Application Shield applied to Nucleo STM32F
+Part of library for LCD on MBED Application Shield applied to Nucleo STM32Fxx.<br />
+Links fort parts:
+<ul>
+  <li><a href="https://os.mbed.com/components/mbed-Application-Shield/">MBED App Shield</a> at mbed dev. page, LCD with ST75
+65R controller</li>
+  <li><a href="http://www.st.com/content/st_com/en/products/evaluation-tools/product-evaluation-tools/mcu-eval-tools/stm32-mcu-eval-tools/stm32-mcu-nucleo/nucleo-f411re.html">Nucleo STM32F411</a> at st.com</li>
+</ul>
 
-Using sample:
+Usage sample:
 <pre>
 #include "mbed_shield_lcd.h"        // include public functions
 ...
