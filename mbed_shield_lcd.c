@@ -198,7 +198,7 @@ static bool MBED_LCD_init_hw()                          ///< Init SPI, GPIO, ...
  */
 void MBED_LCD_InitVideoRam(uint8_t val)
 {
-  for(int r = 0; r < _MBED_LCD_ROWS; r++)
+  for(int r = 0; r < _MBED_LCD_LINES; r++)      // repaired 2019-09-23
     for(int x = 0; x < _MBED_LCD_COLUMNS; x++)
       m_videoRam[r][x] = val;
 }
