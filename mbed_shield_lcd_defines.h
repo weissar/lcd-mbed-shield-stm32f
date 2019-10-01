@@ -15,7 +15,7 @@
 /**
  * Header file with Core function - set GPIO mode, set Alternate Function number
  */
-#define _MBED_LCD_CORE_FUNCTIONS_H   "nucleo_core.h"
+#define _MBED_LCD_CORE_FUNCTIONS_H   "stm_core.h"
 
 /**
  * Function for setting GPIO mode
@@ -26,7 +26,7 @@
  * Function for setting Alternate Funcion number
  * Parameteres required: fn(GPIO_TypeDef *gpio, uint32_t bitnum, uint32_t afValue)
  */
-#define _MBED_LCD_NUCLEO_FN_SET_AF   Nucleo_SetPinAFGPIO
+#define _MBED_LCD_NUCLEO_FN_SET_AF   Nucleo_SetAFGPIO
 /**
  * Function for writing to GPIO in output mode
  * Parameteres required: fn(GPIO_TypeDef *gpio, uint32_t bitnum, bool state)
