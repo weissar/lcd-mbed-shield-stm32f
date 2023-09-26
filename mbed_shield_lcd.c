@@ -1,24 +1,26 @@
-/*
- * mbed_shield_lcd.c
- *
- *  Created on: 17. 9. 2017
- *      Author: Petr Weissar
- */
-
-/**
- * Required contants for accessing to other parts of app
- */
-#include "mbed_shield_lcd_defines.h"
-/**
- * Public function for using from main part of app
- */
-#include "mbed_shield_lcd.h"
-
 /**
  * Include common core function, must contain setGPIO, setAF, GPIOWrite
  */
-#include _MBED_LCD_CORE_FUNCTIONS_H
+#include "stm_core.h"
 
+#include "mbed_shield_lcd.h"
+
+/**
+ * Used SPI channel
+ */
+#define _MBED_LCD_SPI         SPI1
+/**
+ * Alternate Funcion number for GPIO AF signals (SCK and MOSI)
+ */
+#define _MBED_LCD_SPI_AF_NUM  5
+/**
+ * Definition of GPIO ports for concrete control signals
+ */
+#define _MBED_LCD_SPI_SCK     GPIOA,5       ///< SPI clock
+#define _MBED_LCD_SPI_MOSI    GPIOA,7       ///< SPI MOSI signal
+#define _MBED_LCD_PIN_RSTN    GPIOA,6       ///< display RST signal, active in LO
+#define _MBED_LCD_PIN_CSN     GPIOB,6       ///< display CS signal, active in LO
+#define _MBED_LCD_PIN_A0      GPIOA,8       ///< display A0 signal, LO = commands, HI = data
 /**
  * Differencies between platforms
  * !! not completed, can emit error
@@ -81,20 +83,20 @@ static uint8_t m_videoRam[_MBED_LCD_LINES][_MBED_LCD_COLUMNS];
  */
 static void MBED_LCD_send(uint8_t val, bool a0)       ///< Write single value to LCD - using SPI, A0 selects CMD = 0, DATA = 1
 {
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_A0, a0 ? 1 : 0);
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_CSN, 0);
+  GPIOWrite(_MBED_LCD_PIN_A0, a0 ? 1 : 0);
+  GPIOWrite(_MBED_LCD_PIN_CSN, 0);
 
   _MBED_LCD_SPI->DR = val;
   while(SPI_IS_BUSY(_MBED_LCD_SPI))                   // waiting is different fo F4xx and another Fxxx
     ;                                                 // blocking waiting
 
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_CSN, 1);
+  GPIOWrite(_MBED_LCD_PIN_CSN, 1);
 }
 
 static void MBED_LCD_sendData(uint8_t *val, uint16_t len)   ///< Write block of data, pointer to start and length
 {
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_A0, 1);      // always data
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_CSN, 0);
+  GPIOWrite(_MBED_LCD_PIN_A0, 1);      // always data
+  GPIOWrite(_MBED_LCD_PIN_CSN, 0);
 
   for(; len; len--)
   {
@@ -105,20 +107,20 @@ static void MBED_LCD_sendData(uint8_t *val, uint16_t len)   ///< Write block of 
       ;
   }
 
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_CSN, 1);
+  GPIOWrite(_MBED_LCD_PIN_CSN, 1);
 }
 
 static bool MBED_LCD_reset(void)                        ///< Perform reset sequence
 {
   uint16_t w, x = 0;
 
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_A0, 0);
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_RSTN, 0);
+  GPIOWrite(_MBED_LCD_PIN_A0, 0);
+  GPIOWrite(_MBED_LCD_PIN_RSTN, 0);
 
   for(w = 0; w < 10000; w++)
     x++;                                                // Dummy increment prevents optimalisation
 
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_RSTN, 1);
+  GPIOWrite(_MBED_LCD_PIN_RSTN, 1);
 
   for(w = 0; w < 1000; w++)
     x++;
@@ -139,16 +141,16 @@ static void MBED_LCD_set_page(uint8_t p)                ///< Send command to LCD
 
 static bool MBED_LCD_init_hw()                          ///< Init SPI, GPIO, ...
 {
-  _MBED_LCD_NUCLEO_FN_SET_GPIO(_MBED_LCD_PIN_RSTN, _MBED_LCD_NUCLEO_ENUM_OUT_PP);
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_RSTN, 1);
-  _MBED_LCD_NUCLEO_FN_SET_GPIO(_MBED_LCD_PIN_CSN, _MBED_LCD_NUCLEO_ENUM_OUT_PP);
-  _MBED_LCD_NUCLEO_FN_GPIO_WR(_MBED_LCD_PIN_CSN, 1);
-  _MBED_LCD_NUCLEO_FN_SET_GPIO(_MBED_LCD_PIN_A0, _MBED_LCD_NUCLEO_ENUM_OUT_PP);
+  STM_SetPinGPIO(_MBED_LCD_PIN_RSTN, ioPortOutputPP);
+  GPIOWrite(_MBED_LCD_PIN_RSTN, 1);
+  STM_SetPinGPIO(_MBED_LCD_PIN_CSN, ioPortOutputPP);
+  GPIOWrite(_MBED_LCD_PIN_CSN, 1);
+  STM_SetPinGPIO(_MBED_LCD_PIN_A0, ioPortOutputPP);
 
-  _MBED_LCD_NUCLEO_FN_SET_GPIO(_MBED_LCD_SPI_MOSI, _MBED_LCD_NUCLEO_ENUM_AF_PP);
-  _MBED_LCD_NUCLEO_FN_SET_AF(_MBED_LCD_SPI_MOSI, _MBED_LCD_SPI_AF_NUM);        // AFxx
-  _MBED_LCD_NUCLEO_FN_SET_GPIO(_MBED_LCD_SPI_SCK, _MBED_LCD_NUCLEO_ENUM_AF_PP);
-  _MBED_LCD_NUCLEO_FN_SET_AF(_MBED_LCD_SPI_SCK, _MBED_LCD_SPI_AF_NUM);         // AFxx
+  STM_SetPinGPIO(_MBED_LCD_SPI_MOSI, ioPortAlternatePP);
+  STM_SetAFGPIO(_MBED_LCD_SPI_MOSI, _MBED_LCD_SPI_AF_NUM);        // AFxx
+  STM_SetPinGPIO(_MBED_LCD_SPI_SCK, ioPortAlternatePP);
+  STM_SetAFGPIO(_MBED_LCD_SPI_SCK, _MBED_LCD_SPI_AF_NUM);         // AFxx
 
   switch((uint32_t)_MBED_LCD_SPI)                       // Switch reuired due using ohter APBx for some SPIx
   {
