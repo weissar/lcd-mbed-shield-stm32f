@@ -7,7 +7,7 @@ Links for parts:
   <li><a href="http://www.st.com/content/st_com/en/products/evaluation-tools/product-evaluation-tools/mcu-eval-tools/stm32-mcu-eval-tools/stm32-mcu-nucleo/nucleo-f411re.html">Nucleo STM32F411</a> at st.com</li>
 </ul>
 
-Usage sample:
+Usage sample without DMA+TIMER autorefresh:
 <pre>
 #include "mbed_shield_lcd.h"        // include public functions
 ...
@@ -31,5 +31,26 @@ int main(void)
   MBED_LCD_DrawCircle(80, 16, 8, true);     // sample drawing
   MBED_LCD_DrawCircle(96, 16, 12, true);
 
-  MBED_LCD_VideoRam2LCD();         // move changes in video buffer to LCD
+  MBED_LCD_VideoRam2LCD();         // move changes in video buffer to LCD 
+</pre>
+
+Usage sample with DMA+TIMER autorefresh:
+<ul>
+  <li>Not needed to call MBED_LCD_VideoRam2LCD</li>
+  <li>Set global project symbol USE_DMA_REFRESH</li>
+  <li>Otherwise preprocessor generates warning - use manual refresh</li>
+</ul>
+<pre>
+#include "mbed_shield_lcd.h"        // include public functions
+...
+  if (!MBED_LCD_init())             // check success
+  {
+    while(1)                        // defined stop when it fails
+      ;
+  }
+
+  MBED_LCD_InitVideoRam(0x00);      // fill content with 0 = clear memory buffer
+
+  ... similar code working with frame-buffer
+  ... not needed to call MBED_LCD_VideoRam2LCD !!
 </pre>
