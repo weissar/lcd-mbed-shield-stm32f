@@ -156,8 +156,8 @@ static bool MBED_LCD_reset(void)                        ///< Perform reset seque
 
 static void MBED_LCD_set_start_line(uint8_t x)          ///< Send command to LCD, info from DS
 {
-  MBED_LCD_send(0x10 | ((x & 0xf0) >> 4), 0);           // (2) Display start line set = Sets the display RAM display start lineaddress - lower 6 bits
-  MBED_LCD_send(0x00 | (x & 0x0f), 0);                  // (2) Display start line set = Sets the display RAM display start lineaddress - lower 6 bits
+  MBED_LCD_send(0x10 | ((x & 0xf0) >> 4), 0);           // (4) Display start line set = Sets the display RAM display start lineaddress - upper 6 bits
+  MBED_LCD_send(0x00 | (x & 0x0f), 0);                  // (4) Display start line set = Sets the display RAM display start lineaddress - lower 6 bits
 }
 
 static void MBED_LCD_set_page(uint8_t p)                ///< Send command to LCD, info from DS
