@@ -409,7 +409,7 @@ bool MBED_LCD_WriteStringCR(char *cp, uint8_t col, uint8_t row)
  */
 bool MBED_LCD_WriteStringXY(char *cp, uint8_t x, uint8_t y)
 {
-  if ((x >= _MBED_LCD_COLUMNS) || (y >= _MBED_LCD_ROWS))
+  if ((x >= _MBED_LCD_COLUMNS / 8) || (y >= _MBED_LCD_ROWS))
     return false;
 
   for (; *cp; cp++)
@@ -427,11 +427,22 @@ bool MBED_LCD_WriteStringXY(char *cp, uint8_t x, uint8_t y)
  */
 void MBED_LCD_PutPixel(uint8_t x, uint8_t y, bool black)
 {
+  if ((x >= _MBED_LCD_COLUMNS) || (y >= _MBED_LCD_ROWS))
+    return;        //TODO return FAIL
+
+  register uint32_t offset = _MBED_LCD_COLUMNS * (y / 8) + x; // !! division by 8 as first !!
+  if (black)
+    m_videoRam[offset] |= 1 << (y % 8);
+  else
+    m_videoRam[offset] &= ~(1 << (y % 8));
+
+  /* no-checked
   //TODO check x < 128 and y < 32
   if (black)
     m_videoRam[y / 8][x] |= 1 << (y % 8);
   else
     m_videoRam[y / 8][x] &= ~(1 << (y % 8));
+  */
 }
 
 /**
