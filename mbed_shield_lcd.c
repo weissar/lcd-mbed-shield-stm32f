@@ -430,11 +430,13 @@ void MBED_LCD_PutPixel(uint8_t x, uint8_t y, bool black)
   if ((x >= _MBED_LCD_COLUMNS) || (y >= _MBED_LCD_ROWS))
     return;        //TODO return FAIL
 
-  register uint32_t offset = _MBED_LCD_COLUMNS * (y / 8) + x; // !! division by 8 as first !!
+  register uint32_t row = y / 8;              // row on diplay
+  register uint8_t pixMask = 1u << (y % 8);   // pixel mask in byte
+
   if (black)
-    m_videoRam[offset] |= 1 << (y % 8);
+    m_videoRam[row][x] |= pixMask;
   else
-    m_videoRam[offset] &= ~(1 << (y % 8));
+    m_videoRam[row][x] &= ~pixMask;
 
   /* no-checked
   //TODO check x < 128 and y < 32
